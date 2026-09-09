@@ -13,13 +13,3 @@ export const pool = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0
 });
-
-export const dbConnection = async () => {
-    try {
-        const [rows] = await pool.query('SELECT 1');
-        console.log('Conexion a la base de datos exitosa', rows[0]);
-    } catch (e) {
-        console.error('Error al conectar con la base de datos:', e.message);
-        process.exit(1); 
-    }
-};
