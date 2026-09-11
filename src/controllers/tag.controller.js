@@ -5,7 +5,8 @@ import { isValidUUID } from '../utils/validatorUUID.js';
 
 export const store = async (req, res) => {
     try{
-        const { name, user_id } = req.body;
+        const { name} = req.body;
+        const user_id = req.user.id;
 
         if(!name || !user_id){
             return res.status(400).json({ error: 'Todos los campos son necesarios' });
@@ -36,7 +37,7 @@ export const store = async (req, res) => {
 
 export const index = async (req, res) => {
     try{
-        const { user_id } = req.query;
+        const user_id = req.user.id;
 
         if(!user_id || !isValidUUID(user_id)){
             return res.status(400).json({ error: 'ID del usuario es requerido y debe ser valido' });
@@ -56,7 +57,7 @@ export const index = async (req, res) => {
 export const show = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user_id } = req.query;
+        const user_id = req.user.id;
 
         if (!user_id || !isValidUUID(user_id) || !isValidUUID(id)) {
             return res.status(400).json({ error: 'IDs requeridos o invalidos' });
@@ -83,7 +84,8 @@ export const show = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, user_id } = req.body;
+        const { name } = req.body;
+        const user_id = req.user.id;
 
         if (!name || !user_id || !isValidUUID(user_id) || !isValidUUID(id)){
             return res.status(400).json({ error: 'Faltan datos o IDs invalidos' });
@@ -116,7 +118,7 @@ export const update = async (req, res) => {
 export const destroy = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user_id } = req.query; 
+        const user_id = req.user.id; 
 
         if(!user_id || !isValidUUID(user_id) || !isValidUUID(id)){
             return res.status(400).json({ error: 'IDs requeridos o invalidos' })
