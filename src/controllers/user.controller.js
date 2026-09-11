@@ -1,5 +1,6 @@
-import bcrypy from 'bcrypt';
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { pool } from '../db/connection.js';
 import { userDecorator } from '../decorators/user.decorator.js';
 
@@ -21,7 +22,7 @@ export const registerUser = async (req, res) => {
             return res.status(422).json({ error: 'La contraseña debe tener minimo 8 caracteres' });
         }
 
-        const hashedPassword = await bcrypy.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         const userId = crypto.randomUUID();
         
         const query = `
@@ -36,7 +37,45 @@ export const registerUser = async (req, res) => {
             data: userDecorator(newUser)
         });
     }catch(e){
-        console.error('Error ', e);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+};
+
+export const login = async (req, res) => {
+    try{
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Correo y contraseña son necesarios' });
+        }
+
+        const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+        
+        if (rows.length === 0) {
+            return res.status(401).json({ error: 'Credenciales invalidas' });
+        }
+
+        const user = rows[0];
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Credenciales invalidas' });
+        }
+
+        const token = jwt.sign(
+            { id: user.id },
+            process.env.JWT_KEY,
+            { expiresIn: '8h' }
+        );
+
+        res.status(200).json({
+            message: 'Inicio de sesion exitoso',
+            data: userDecorator(user),
+            token
+        });
+
+    }catch(e) {
         res.status(500).json({ error: 'Error del servidor' });
     }
 };
