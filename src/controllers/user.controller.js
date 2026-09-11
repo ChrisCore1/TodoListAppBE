@@ -72,7 +72,7 @@ export const login = async (req, res) => {
         res.status(200).json({
             message: 'Inicio de sesion exitoso',
             data: userDecorator(user),
-            token: token
+            token
         });
 
     }catch(e) {
