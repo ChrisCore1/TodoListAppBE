@@ -20,7 +20,8 @@ const getTaskQuery = `
 export const store = async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        const { title, description, category_id, user_id, tags } = req.body;
+        const { title, description, category_id, tags } = req.body;
+        const user_id = req.user.id;
 
         if (!title || !category_id || !user_id) {
             return res.status(400).json({ error: 'Titulo, categoria y usuario son necesarios' });
@@ -68,7 +69,7 @@ export const store = async (req, res) => {
 
 export const index = async (req, res) => {
     try {
-        const { user_id } = req.query;
+        const user_id = req.user.id;
 
         if (!user_id || !isValidUUID(user_id)) {
             return res.status(400).json({ error: 'user_id es requerido y válido' });
@@ -100,7 +101,7 @@ export const index = async (req, res) => {
 export const show = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user_id } = req.query;
+        const user_id = req.user.id;
 
         if (!user_id || !isValidUUID(user_id) || !isValidUUID(id)) {
             return res.status(400).json({ error: 'IDs invalidos o incompletos' });
@@ -124,7 +125,8 @@ export const update = async (req, res) => {
     const connection = await pool.getConnection();
     try {
         const { id } = req.params;
-        const { title, description, status, category_id, user_id, tags } = req.body;
+        const { title, description, status, category_id, tags } = req.body;
+        const user_id = req.user.id;
 
         if (!user_id || !isValidUUID(user_id) || !isValidUUID(id)) {
             return res.status(400).json({ error: 'IDs invalidos' });
@@ -181,7 +183,7 @@ export const update = async (req, res) => {
 export const destroy = async (req, res) => {
     try {
         const { id } = req.params;
-        const { user_id } = req.query;
+        const user_id = req.user.id;
 
         if (!user_id || !isValidUUID(user_id) || !isValidUUID(id)) {
             return res.status(400).json({ error: 'IDs inválidos' });
