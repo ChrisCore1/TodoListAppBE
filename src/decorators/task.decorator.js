@@ -1,13 +1,21 @@
 export const taskDecorator = (task) => {
+    const tagIds = task.tag_id ? task.tag_id.split(',') : [];
+    const tagNames = task.name_tag ? task.name_tag.split(',') : [];
+
+    const tags = tagIds.map((id, index) => ({
+        tag_id: id,
+        name_tag: tagNames[index]
+    }));
+
     return{
-        id: task.id,
+        task_id: task.id,
         title: task.title,
         description: task.description,
         status: task.status,
-        categoryId: task.category_id,
-        categoryName: task.category_name || null,
+        category_id: task.category_id,
+        category_name: task.category_name || null,
         userId: task.userId,
-        tags: task.tags ? task.tags.split(',') : [],
+        tags
     };
 };
 

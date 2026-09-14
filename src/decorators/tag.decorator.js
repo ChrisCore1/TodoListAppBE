@@ -1,7 +1,7 @@
 export const tagDecorator = (tag) => {
     return {
-        id: tag.id,
-        name: tag.name,
+        tag_id: tag.id,
+        name_tag: tag.name,
         userId: tag.user_id
     };
 };

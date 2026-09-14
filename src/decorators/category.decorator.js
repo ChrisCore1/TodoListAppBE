@@ -1,7 +1,7 @@
 export const categoryDecorator = (category) => {
     return {
-        id: category.id,
-        name: category.name,
+        category_id: category.id,
+        name_category: category.name,
         userId: category.user_id,
     }
 };

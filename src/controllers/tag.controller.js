@@ -2,13 +2,14 @@ import crypto from 'crypto';
 import { pool } from '../db/connection.js';
 import { tagDecorator, tagsListDecorator } from '../decorators/tag.decorator.js';
 import { isValidUUID } from '../utils/validatorUUID.js';
+import { getPaginationParams } from '../utils/pagination.js';
 
 export const store = async (req, res) => {
     try{
-        const { name} = req.body;
+        const { name_tag } = req.body;
         const user_id = req.user.id;
 
-        if(!name || !user_id){
+        if(!name_tag || !user_id){
             return res.status(400).json({ error: 'Todos los campos son necesarios' });
         }
 
@@ -19,9 +20,9 @@ export const store = async (req, res) => {
         const tagId = crypto.randomUUID();
         const query = 'INSERT INTO tags(id, name, user_id) VALUES(?, ?, ?)';
 
-        await pool.query(query, [tagId, name, user_id]);
+        await pool.query(query, [tagId, name_tag, user_id]);
 
-        const newTag = { id: tagId, name, user_id };
+        const newTag = { id: tagId, name: name_tag, user_id };
 
         res.status(201).json({ 
             data: tagDecorator(newTag) 
@@ -43,10 +44,22 @@ export const index = async (req, res) => {
             return res.status(400).json({ error: 'ID del usuario es requerido y debe ser valido' });
         } 
 
-        const [rows] = await pool.query('SELECT * FROM tags WHERE user_id = ?', [user_id]);
+        const { page, limit, offset } = getPaginationParams(req.query);
+
+        const countQuery = 'SELECT COUNT(id) AS total FROM tags WHERE user_id = ?';
+        const [countResult] = await pool.query(countQuery, [user_id]);
+        const total = countResult[0].total;
+
+        const [rows] = await pool.query('SELECT * FROM tags WHERE user_id = ? LIMIT ? OFFSET ?', [user_id, limit, offset]);
+
+        const lastPage = Math.ceil(total / limit) || 1;
 
         res.status(200).json({ 
-            data: tagsListDecorator(rows) 
+            data: tagsListDecorator(rows),
+            total,
+            current_page: page,
+            last_page: lastPage,
+            per_page: limit
         });
 
     }catch(e){
@@ -73,7 +86,7 @@ export const show = async (req, res) => {
         }
 
         res.status(200).json({
-            data: tagDecorator(rows[0])
+            ...tagDecorator(rows[0])
         });
 
     } catch (error) {
@@ -84,16 +97,16 @@ export const show = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name } = req.body;
+        const { name_tag } = req.body;
         const user_id = req.user.id;
 
-        if (!name || !user_id || !isValidUUID(user_id) || !isValidUUID(id)){
+        if (!name_tag || !user_id || !isValidUUID(user_id) || !isValidUUID(id)){
             return res.status(400).json({ error: 'Faltan datos o IDs invalidos' });
         } 
 
         const [result] = await pool.query(
             'UPDATE tags SET name = ? WHERE id = ? AND user_id = ?', 
-            [name, id, user_id]
+            [name_tag, id, user_id]
         );
 
         if (result.affectedRows === 0) {
